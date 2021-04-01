@@ -12,7 +12,7 @@ import java.util.*;
 public class MessageController {
 
     private       Integer          index    = 0;
-    private final List<MessageDTO> messages = new ArrayList<>();
+    private final List<MessageDTO> messages = Collections.synchronizedList(new ArrayList<>());
 
     public MessageController() {
         doSave("Hello world from internal startup");
@@ -39,16 +39,14 @@ public class MessageController {
 
     @GetMapping (value = "{id}")
     @ResponseBody
-    public ResponseEntity getMessage(@PathVariable (name = "id") final Integer id) {
-        ResponseEntity result = null;
+    public ResponseEntity<MessageDTO> getMessage(@PathVariable (name = "id") final Integer id) {
 
-        Optional<MessageDTO> found = messages.stream().filter(m -> m.id == id).findAny();
-
-        if (found.isPresent()) {
-            result = ResponseEntity.ok(found.get());
-        } else {
-            result = ResponseEntity.notFound().build();
-        }
+        final ResponseEntity<MessageDTO> result = messages
+                                                          .stream()
+                                                          .filter(m -> m.id == id)
+                                                          .findAny()
+                                                          .map(ResponseEntity :: ok)
+                                                          .orElseGet(() -> ResponseEntity.notFound().build());
 
         return result;
     }
@@ -59,9 +57,7 @@ public class MessageController {
 
         Optional<MessageDTO> target = messages.stream().filter(m -> m.id == id).findAny();
         if (target.isPresent()) {
-            synchronized (messages) {
-                messages.remove(target.get());
-            }
+            messages.remove(target.get());
             result = ResponseEntity.ok().build();
 
             log.info(">>> Deleted {}", target.get());
