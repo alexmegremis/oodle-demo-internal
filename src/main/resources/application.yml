@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: Oodle Demo Internal
+  cloud:
+    consul:
+      host: docker.pve.aamegremis.com
+      port: 8500
+      discovery:
+        service-name: Internal API
+        instance-id: ${spring.application.name}:${spring.cloud.consul.discovery.service-name}
+server:
+  port: 8085
