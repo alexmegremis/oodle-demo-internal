@@ -10,3 +10,4 @@ spring:
         instance-id: ${spring.application.name}:${spring.cloud.consul.discovery.service-name}
 server:
   port: 8085
+debug: true
